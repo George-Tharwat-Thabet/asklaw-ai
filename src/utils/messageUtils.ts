@@ -81,16 +81,27 @@ const downloadAsPdf = (message: Message): void => {
   doc.setFont('helvetica', 'normal');
   
   // Split text to fit within page width and handle line breaks
+  let yPosition = 45;
+  const pageHeight = 280;
+  const lineHeight = 7;
+
   const splitText = doc.splitTextToSize(formattedText, 170);
-  doc.text(splitText, 20, 45);
+  splitText.forEach((line: string) => {
+    if (yPosition + lineHeight > pageHeight) {
+      doc.addPage();
+      yPosition = 20;
+    }
+    doc.text(line, 20, yPosition);
+    yPosition += lineHeight;
+  });
   
   // Add a footer
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(8);
-    doc.text('Disclaimer: AskLaw-AI provides information for educational purposes only.', 105, 285, { align: 'center' });
-    doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
+    doc.text('Disclaimer: AskLaw-AI provides information for educational purposes only.', 105, doc.internal.pageSize.height - 15, { align: 'center' });
+    doc.text(`Page ${i} of ${pageCount}`, 105, doc.internal.pageSize.height - 10, { align: 'center' });
   }
   
   // Save the PDF
